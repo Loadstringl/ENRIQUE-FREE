@@ -21,6 +21,7 @@ const {
 
 const PREFIX = (process.env.COMMAND_PREFIX || '!').toLowerCase();
 const BOT_DELAY_MS = Number(process.env.UNO_BOT_DELAY_MS || 1200);
+const BOT_STEP_MS = Math.max(0, Math.min(450, BOT_DELAY_MS));
 const MAX_PLAYERS = engine.MAX_PLAYERS;
 const UNO_CHANNEL_NAMES = (process.env.UNO_CHANNEL_NAMES || '')
   .split(',')
@@ -170,7 +171,7 @@ async function runBotTurn(session, channel) {
     }
     if (move.action === 'draw') {
       lines.push(applyMove(session, bot.id, { type: 'draw' }).text);
-      await sleep(450);
+      if (BOT_STEP_MS) await sleep(BOT_STEP_MS);
       continue;
     }
     lines.push(applyMove(session, bot.id, { type: 'pass' }).text);
