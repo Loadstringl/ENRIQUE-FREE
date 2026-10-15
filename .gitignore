@@ -3,3 +3,5 @@ node_modules/
 *.log
 .script-ai-state.json
 .env
+bot.pid
+bot.log

@@ -3,6 +3,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Events, ActivityType } = require('discord.js');
 const { replyWithScripts } = require('./scriptAi');
 const { registerWelcome } = require('./welcome');
+const { registerUno, isUnoCommand } = require('./uno/uno');
 
 const token = process.env.DISCORD_TOKEN;
 const AI_CHANNEL_NAMES = (process.env.SCRIPT_AI_CHANNEL_NAMES || 'script-ai')
@@ -33,6 +34,8 @@ const client = new Client({
 
 const busyChannels = new Set();
 
+registerUno(client);
+
 registerWelcome(client, {
   channelNames: WELCOME_CHANNEL_NAMES,
   ...(process.env.WELCOME_TITLE ? { title: process.env.WELCOME_TITLE } : {}),
@@ -49,6 +52,7 @@ client.once(Events.ClientReady, (readyClient) => {
   console.log(`Auto-search channels: ${AI_CHANNEL_NAMES.map((n) => '#' + n).join(', ')}`);
   console.log(`Result limit: ${RESULT_LIMIT}`);
   console.log(`Welcome channels: ${WELCOME_CHANNEL_NAMES.map((n) => '#' + n).join(', ')}`);
+  console.log('UNO enabled (type !uno help)');
   console.log(`Guilds (${readyClient.guilds.cache.size}):`);
   for (const guild of readyClient.guilds.cache.values()) {
     const hasAi = guild.channels.cache.some((c) => isAiChannel(c));
@@ -65,6 +69,8 @@ client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
   if (!message.inGuild()) return;
   if (!isAiChannel(message.channel)) return;
+
+  if (isUnoCommand(message.content)) return;
 
   const query = message.content.trim();
   if (!query) return;
